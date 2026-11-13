@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad 4: Selecciona el menú más equilibrado</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Nunito & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <!-- Tone.js para efectos de sonido interactivos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Canvas Confetti para celebración final -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+        h1, h2, h3, .font-display {
+            font-family: 'Nunito', sans-serif;
+        }
+        .card-hover {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover:not(:disabled) {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.35s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col justify-between selection:bg-emerald-200">
+
+    <!-- Barra Superior / Header -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-2xl shadow-md text-white">
+                    🥗
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 block">Nutrición y Salud</span>
+                    <h1 class="text-base sm:text-xl font-extrabold text-slate-800 leading-tight">Actividad 4: Selecciona el menú más equilibrado</h1>
+                </div>
+            </div>
+
+            <!-- Indicadores de Estado (Puntuación y Sonido) -->
+            <div class="flex items-center gap-3 ml-auto sm:ml-0">
+                <button id="soundToggle" onclick="toggleSound()" title="Activar/Desactivar sonido" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                    🔊
+                </button>
+                <div id="scoreBadge" class="hidden flex items-center gap-2 bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-xl shadow-sm">
+                    <span class="text-lg">⭐</span>
+                    <span class="text-xs font-bold text-amber-800 uppercase">Puntos:</span>
+                    <span id="scoreDisplay" class="font-display font-black text-lg text-amber-600">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6 sm:py-10 flex flex-col justify-center">
+
+        <!-- PANTALLA 1: INICIO / BIENVENIDA -->
+        <section id="startScreen" class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-10 text-center max-w-3xl mx-auto animate-pop">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-sm mb-5 border border-emerald-200">
+                <span>🍽️</span> Basado en el Plato del Bien Comer
+            </div>
+            
+            <h2 class="text-3xl sm:text-4xl font-black text-slate-800 mb-4 leading-tight">
+                ¿Sabes armar una comida <span class="text-emerald-600">realmente equilibrada</span>?
+            </h2>
+            
+            <p class="text-slate-600 text-base sm:text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
+                Pon a prueba tus conocimientos en <strong>3 rondas</strong> (Desayuno, Comida y Cena). Analiza las opciones y elige el menú que combine adecuadamente los grupos de alimentos esenciales.
+            </p>
+
+            <!-- Guía rápida visual del Plato del Bien Comer -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 text-left">
+                <div class="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4">
+                    <div class="text-2xl mb-1">🥦🍎</div>
+                    <h3 class="font-bold text-emerald-900 text-sm">Verduras y Frutas</h3>
+                    <p class="text-xs text-emerald-700 mt-1">Aportan vitaminas, minerales y fibra. ¡Deben ocupar la mitad del plato!</p>
+                </div>
+                <div class="bg-amber-50/80 border border-amber-200 rounded-2xl p-4">
+                    <div class="text-2xl mb-1">🌾🥔</div>
+                    <h3 class="font-bold text-amber-900 text-sm">Cereales Integrales</h3>
+                    <p class="text-xs text-amber-800 mt-1">Brindan energía duradera. Mejor si son integrales y sin azúcares añadidos.</p>
+                </div>
+                <div class="bg-rose-50/80 border border-rose-200 rounded-2xl p-4">
+                    <div class="text-2xl mb-1">🍗🫘</div>
+                    <h3 class="font-bold text-rose-900 text-sm">Proteínas Saludables</h3>
+                    <p class="text-xs text-rose-800 mt-1">Leguminosas y alimentos de origen animal magros (a la plancha o vapor).</p>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-display font-extrabold text-lg rounded-2xl shadow-lg shadow-emerald-200 transition transform hover:scale-105 active:scale-95 cursor-pointer">
+                🚀 ¡Comenzar Actividad!
+            </button>
+        </section>
+
+        <!-- PANTALLA 2: ÁREA DE JUEGO -->
+        <section id="gameScreen" class="hidden w-full animate-pop">
+            <!-- Barra de Progreso y Ronda -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 mb-6">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-2">
+                        <span id="roundIcon" class="text-2xl">🌅</span>
+                        <h2 id="roundTitle" class="text-xl sm:text-2xl font-black text-slate-800">Ronda 1 de 3: El Desayuno</h2>
+                    </div>
+                    <span id="roundStepText" class="text-xs font-bold px-3 py-1 rounded-full bg-sky-100 text-sky-700">Paso 1 / 3</span>
+                </div>
+                <p id="roundSubtitle" class="text-sm text-slate-500 mb-3">Selecciona la opción que aporte energía sostenida, vitaminas y proteínas sin exceso de azúcares.</p>
+                
+                <!-- Barra de progreso -->
+                <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                    <div id="progressBar" class="bg-gradient-to-r from-emerald-400 to-teal-500 h-3 rounded-full transition-all duration-500" style="width: 33.33%"></div>
+                </div>
+            </div>
+
+            <!-- Contenedor de las 3 Tarjetas de Menú -->
+            <div id="menusContainer" class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+                <!-- Las tarjetas se inyectan dinámicamente vía JS -->
+            </div>
+
+            <!-- Panel de Retroalimentación Educativa (Oculto hasta responder) -->
+            <div id="feedbackPanel" class="hidden rounded-3xl p-6 sm:p-7 border-2 shadow-lg animate-pop mb-6">
+                <div class="flex flex-col sm:flex-row items-start gap-4">
+                    <div id="feedbackIcon" class="text-4xl sm:text-5xl bg-white p-3 rounded-2xl shadow-sm shrink-0">
+                        ✅
+                    </div>
+                    <div class="flex-grow">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <h3 id="feedbackTitle" class="text-xl sm:text-2xl font-black">¡Excelente elección!</h3>
+                            <span id="feedbackPoints" class="text-xs font-extrabold uppercase px-3 py-1 rounded-full bg-white shadow-sm">+100 Puntos</span>
+                        </div>
+                        <p id="feedbackMainText" class="text-sm sm:text-base leading-relaxed mb-4 font-medium"></p>
+                        
+                        <!-- Desglose educativo de las 3 opciones -->
+                        <div class="bg-white/80 rounded-2xl p-4 border border-black/5">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">📋 Análisis nutricional de la ronda:</h4>
+                            <ul id="feedbackBreakdown" class="space-y-2 text-xs sm:text-sm text-slate-700">
+                                <!-- Se llena dinámicamente -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button id="nextRoundBtn" onclick="nextRound()" class="w-full sm:w-auto px-7 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-display font-bold text-base rounded-xl shadow-md transition transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
+                        <span>Siguiente Ronda</span> <span>➡️</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANTALLA 3: RESULTADOS FINALES -->
+        <section id="resultScreen" class="hidden bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-10 text-center max-w-3xl mx-auto animate-pop">
+            <div id="resultMedal" class="w-24 h-24 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center text-6xl shadow-inner">
+                🏆
+            </div>
+            
+            <span class="text-xs font-bold uppercase tracking-widest text-emerald-600">Actividad Completada</span>
+            <h2 id="resultRankTitle" class="text-3xl sm:text-4xl font-black text-slate-800 mt-1 mb-3">¡Experto en Nutrición!</h2>
+            <p id="resultMessage" class="text-slate-600 text-base sm:text-lg mb-6 max-w-xl mx-auto">
+                Has demostrado un gran dominio al combinar verduras, frutas, cereales integrales y proteínas saludables.
+            </p>
+
+            <!-- Tarjeta de Puntuación Final -->
+            <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-5 mb-8 max-w-md mx-auto">
+                <div class="text-sm font-semibold text-emerald-800">Puntuación Final Obtenida</div>
+                <div class="text-4xl sm:text-5xl font-display font-black text-emerald-600 my-1">
+                    <span id="finalScore">300</span> <span class="text-xl text-emerald-700/70">/ 300</span>
+                </div>
+                <div id="correctCountText" class="text-xs font-bold text-emerald-700 mt-1">3 de 3 menús equilibrados seleccionados a la primera</div>
+            </div>
+
+            <!-- Resumen de lo aprendido por ronda -->
+            <div class="text-left mb-8">
+                <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center gap-2">
+                    <span>📝</span> Resumen de tus elecciones:
+                </h3>
+                <div id="summaryList" class="space-y-3">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button onclick="restartGame()" class="w-full sm:w-auto px-7 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-display font-bold text-base rounded-2xl shadow-lg shadow-emerald-200 transition transform hover:scale-105 cursor-pointer">
+                    🔄 Jugar de Nuevo
+                </button>
+                <button onclick="copySummary()" id="copyBtn" class="w-full sm:w-auto px-7 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-display font-bold text-base rounded-2xl transition cursor-pointer">
+                    📋 Copiar Resultados para Tarea
+                </button>
+            </div>
+            <p id="copyFeedback" class="text-xs text-emerald-600 font-semibold mt-3 hidden">¡Resumen copiado al portapapeles! Ya puedes pegarlo en tu documento escolar.</p>
+        </section>
+
+    </main>
+
+    <!-- Pie de página -->
+    <footer class="text-center py-4 px-4 text-xs text-slate-500">
+        Actividad Educativa Interactiva • Alimentación Saludable y Plato del Bien Comer
+    </footer>
+
+    <!-- Lógica de la Aplicación -->
+    <script>
+        // Base de datos educativa de las rondas (Desayuno, Comida, Cena)
+        const roundsData = [
+            {
+                id: 1,
+                title: "Ronda 1 de 3: El Desayuno",
+                icon: "🌅",
+                subtitle: "El desayuno rompe el ayuno nocturno. Elige el menú que brinde energía duradera, fibra y proteínas sin picos de azúcar.",
+                options: [
+                    {
+                        id: "opt1",
+                        label: "Menú A",
+                        tag: "Ultraprocesados y Azúcar",
+                        isBalanced: false,
+                        items: [
+                            { emoji: "🍩", name: "2 Donas glaseadas" },
+                            { emoji: "🧃", name: "Jugo industrializado en caja" },
+                            { emoji: "🥓", name: "Tocino frito" }
+                        ],
+                        shortFeedback: "Exceso de azúcares simples, harinas refinadas y grasas saturadas; carece de fibra y vitaminas.",
+                        detailedExplanation: "Aunque aporta muchas calorías rápidas, provoca un pico de glucosa seguido de cansancio. No incluye frutas frescas ni cereales integrales."
+                    },
+                    {
+                        id: "opt2",
+                        label: "Menú B",
+                        tag: "Plato del Bien Comer",
+                        isBalanced: true,
+                        items: [
+                            { emoji: "🍳", name: "Huevo revuelto con espinacas y jitomate" },
+                            { emoji: "🍞", name: "1 rebanada de pan integral tostado" },
+                            { emoji: "🍓", name: "Taza de fresas y papaya picada" },
+                            { emoji: "💧", name: "Agua natural o té sin azúcar" }
+                        ],
+                        shortFeedback: "¡Correcto! Combina proteína de calidad (huevo), verduras (espinaca/jitomate), cereal integral y fruta fresca.",
+                        detailedExplanation: "Es un desayuno completo y equilibrado: tiene los 3 grupos de alimentos en proporciones ideales, fibra natural y excelente hidratación."
+                    },
+                    {
+                        id: "opt3",
+                        label: "Menú C",
+                        tag: "Solo Carbohidratos",
+                        isBalanced: false,
+                        items: [
+                            { emoji: "🥣", name: "Cereal azucarado de caja con leche entera" },
+                            { emoji: "🍌", name: "1 Plátano" },
+                            { emoji: "🥞", name: "1 Hot cake con miel" }
+                        ],
+                        shortFeedback: "Sobrecarga de carbohidratos y azúcares; falta variedad de verduras y proteínas más completas.",
+                        detailedExplanation: "Todo el menú se concentra en harinas, azúcares y fruta, dejando fuera las verduras y generando digestión rápida con hambre al poco tiempo."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "Ronda 2 de 3: La Comida Principal",
+                icon: "☀️",
+                subtitle: "La comida del mediodía debe cubrir la mitad del plato con vegetales, un cuarto con proteína magra y un cuarto con cereal o leguminosa.",
+                options: [
+                    {
+                        id: "opt1",
+                        label: "Menú A",
+                        tag: "Comida Rápida",
+                        isBalanced: false,
+                        items: [
+                            { emoji: "🍔", name: "Hamburguesa doble con queso amarillo" },
+                            { emoji: "🍟", name: "Papas fritas grandes" },
+                            { emoji: "🥤", name: "Refresco de cola (600 ml)" }
+                        ],
+                        shortFeedback: "Muy alto en sodio, grasas trans/saturadas y azúcares líquidos; aporte casi nulo de vegetales.",
+                        detailedExplanation: "La fritura profunda y el refresco aportan calorías vacías y exceso de sodio, desplazando nutrientes esenciales como fibra y vitaminas."
+                    },
+                    {
+                        id: "opt2",
+                        label: "Menú B",
+                        tag: "Solo Harinas y Grasas",
+                        isBalanced: false,
+                        items: [
+                            { emoji: "🍝", name: "Plato grande de pasta blanca con crema" },
+                            { emoji: "🥖", name: "Pan de ajo con mantequilla" },
+                            { emoji: "🍰", name: "Rebanada de pastel de chocolate" }
+                        ],
+                        shortFeedback: "Desbalanceado: predominan carbohidratos refinados y grasas, sin verduras ni proteínas magras.",
+                        detailedExplanation: "Le faltan totalmente las verduras y frutas (mitad del plato) y una fuente adecuada de proteína saludable."
+                    },
+                    {
+                        id: "opt3",
+                        label: "Menú C",
+                        tag: "Plato del Bien Comer",
+                        isBalanced: true,
+                        items: [
+                            { emoji: "🍗", name: "Pechuga de pollo a la plancha" },
+                            { emoji: "🥗", name: "Ensalada abundante (lechuga, pepino, zanahoria)" },
+                            { emoji: "🍚", name: "Porción de arroz integral y frijoles" },
+                            { emoji: "💧", name: "Agua simple natural" }
+                        ],
+                        shortFeedback: "¡Excelente! Cumple al 100% con el Plato del Bien Comer: cocción saludable, fibra, proteína y cereal integral.",
+                        detailedExplanation: "La combinación de arroz integral con frijoles aporta aminoácidos esenciales, el pollo es magro y la ensalada brinda vitaminas y saciedad."
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "Ronda 3 de 3: La Cena",
+                icon: "🌙",
+                subtitle: "La cena debe ser ligera, fácil de digerir y nutritiva para favorecer un buen descanso sin pesadez estomacal.",
+                options: [
+                    {
+                        id: "opt1",
+                        label: "Menú A",
+                        tag: "Plato del Bien Comer",
+                        isBalanced: true,
+                        items: [
+                            { emoji: "🐟", name: "Filete de pescado al vapor o empapelado" },
+                            { emoji: "🥦", name: "Brócoli y calabacitas al vapor" },
+                            { emoji: "🌽", name: "2 tortillas de maíz" },
+                            { emoji: "🍵", name: "Infusión de manzanilla sin azúcar" }
+                        ],
+                        shortFeedback: "¡Perfecto! Cena ligera, rica en proteínas de fácil digestión, vegetales al vapor y cereal integral (maíz).",
+                        detailedExplanation: "El pescado y las verduras al vapor se digieren suavemente antes de dormir, mientras que las tortillas de maíz aportan fibra y calcio."
+                    },
+                    {
+                        id: "opt2",
+                        label: "Menú B",
+                        tag: "Frituras Nocturnas",
+                        isBalanced: false,
+                        items: [
+                            { emoji: "🍕", name: "3 rebanadas de pizza de pepperoni" },
+                            { emoji: "🍗", name: "Alitas fritas con salsa picante" },
+                            { emoji: "🥤", name: "Bebida energética o refresco" }
+                        ],
+                        shortFeedback: "Demasiado pesada, grasosa e irritante para la noche; dificulta el sueño y carece de vegetales.",
+                        detailedExplanation: "Las grasas saturadas y la cafeína/azúcar de la bebida alteran el descanso nocturno y causan pesadez digestiva."
+                    },
+                    {
+                        id: "opt3",
+                        label: "Menú C",
+                        tag: "Incompleto",
+                        isBalanced: false,
+                        items: [
+                            { emoji: "🥐", name: "2 piezas de pan dulce" },
+                            { emoji: "☕", name: "Café con 3 cucharadas de azúcar" }
+                        ],
+                        shortFeedback: "Solo aporta harinas refinadas y azúcar; carece de proteínas y verduras para reparar tejidos durante el sueño.",
+                        detailedExplanation: "Aunque parece ligero, es nutricionalmente pobre: no incluye verduras, frutas ni proteínas necesarias para la recuperación nocturna."
+                    }
+                ]
+            }
+        ];
+
+        // Variables de estado del juego
+        let currentRoundIndex = 0;
+        let score = 0;
+        let correctAnswersCount = 0;
+        let roundAnswered = false;
+        let userHistory = [];
+        let soundEnabled = true;
+
+        // Síntesis de sonido con Tone.js (sin archivos externos)
+        function playSound(type) {
+            if (!soundEnabled || typeof Tone === 'undefined') return;
+            try {
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                const synth = new Tone.Synth().toDestination();
+                if (type === 'correct') {
+                    synth.triggerAttackRelease("C5", "16n", Tone.now());
+                    synth.triggerAttackRelease("E5", "16n", Tone.now() + 0.1);
+                    synth.triggerAttackRelease("G5", "8n", Tone.now() + 0.2);
+                } else if (type === 'wrong') {
+                    synth.triggerAttackRelease("E3", "8n", Tone.now());
+                    synth.triggerAttackRelease("C3", "4n", Tone.now() + 0.15);
+                } else if (type === 'click') {
+                    synth.triggerAttackRelease("A4", "32n", Tone.now());
+                }
+            } catch (e) {
+                console.warn("Audio no disponible:", e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundEnabled ? '🔊' : '🔇';
+        }
+
+        // Iniciar el juego
+        function startGame() {
+            playSound('click');
+            currentRoundIndex = 0;
+            score = 0;
+            correctAnswersCount = 0;
+            userHistory = [];
+            
+            document.getElementById('scoreDisplay').textContent = '0';
+            document.getElementById('scoreBadge').classList.remove('hidden');
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            
+            renderRound();
+        }
+
+        // Renderizar la ronda actual
+        function renderRound() {
+            roundAnswered = false;
+            const round = roundsData[currentRoundIndex];
+            
+            // Actualizar encabezados y progreso
+            document.getElementById('roundIcon').textContent = round.icon;
+            document.getElementById('roundTitle').textContent = round.title;
+            document.getElementById('roundSubtitle').textContent = round.subtitle;
+            document.getElementById('roundStepText').textContent = `Paso ${currentRoundIndex + 1} / ${roundsData.length}`;
+            
+            const progressPercent = ((currentRoundIndex + 1) / roundsData.length) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+            
+            // Ocultar panel de retroalimentación
+            const feedbackPanel = document.getElementById('feedbackPanel');
+            feedbackPanel.classList.add('hidden');
+            
+            // Generar tarjetas de opciones
+            const container = document.getElementById('menusContainer');
+            container.innerHTML = '';
+            
+            round.options.forEach((option, index) => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.id = `card-${option.id}`;
+                card.onclick = () => selectOption(option.id);
+                card.className = `card-hover text-left bg-white rounded-3xl p-5 sm:p-6 border-2 border-slate-200 hover:border-emerald-400 shadow-md flex flex-col justify-between cursor-pointer focus:outline-none focus:ring-4 focus:ring-emerald-200`;
+                
+                // Construir lista de alimentos
+                const itemsHTML = option.items.map(item => `
+                    <li class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <span class="text-2xl shrink-0">${item.emoji}</span>
+                        <span class="text-sm font-medium text-slate-700 leading-snug">${item.name}</span>
+                    </li>
+                `).join('');
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="font-display font-black text-lg text-slate-800 bg-slate-100 px-3.5 py-1 rounded-xl">${option.label}</span>
+                            <span class="text-xs font-semibold text-slate-400">Opción ${index + 1}</span>
+                        </div>
+                        <ul class="space-y-2.5 mb-5">
+                            ${itemsHTML}
+                        </ul>
+                    </div>
+                    <div class="pt-3 border-t border-slate-100 text-center">
+                        <span class="inline-block w-full py-2.5 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-sm transition group-hover:bg-emerald-600">
+                            Seleccionar este menú
+                        </span>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Manejar selección del usuario
+        function selectOption(selectedId) {
+            if (roundAnswered) return;
+            roundAnswered = true;
+            
+            const round = roundsData[currentRoundIndex];
+            const selectedOption = round.options.find(opt => opt.id === selectedId);
+            const isCorrect = selectedOption.isBalanced;
+            
+            // Actualizar puntuación e historial
+            if (isCorrect) {
+                score += 100;
+                correctAnswersCount++;
+                playSound('correct');
+            } else {
+                playSound('wrong');
+            }
+            
+            document.getElementById('scoreDisplay').textContent = score;
+            
+            userHistory.push({
+                roundTitle: round.title,
+                selectedLabel: selectedOption.label,
+                isCorrect: isCorrect,
+                itemsSummary: selectedOption.items.map(i => i.name).join(', ')
+            });
+            
+            // Estilizar todas las tarjetas según resultado
+            round.options.forEach(opt => {
+                const cardEl = document.getElementById(`card-${opt.id}`);
+                cardEl.disabled = true;
+                cardEl.classList.remove('hover:border-emerald-400', 'cursor-pointer');
+                cardEl.classList.add('cursor-default');
+                
+                const actionBadge = cardEl.querySelector('div:last-child span');
+                
+                if (opt.isBalanced) {
+                    cardEl.classList.remove('border-slate-200');
+                    cardEl.classList.add('border-emerald-500', 'bg-emerald-50/40', 'ring-4', 'ring-emerald-100');
+                    actionBadge.className = 'inline-block w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm';
+                    actionBadge.textContent = '✅ Menú Equilibrado';
+                } else if (opt.id === selectedId && !opt.isBalanced) {
+                    cardEl.classList.remove('border-slate-200');
+                    cardEl.classList.add('border-rose-500', 'bg-rose-50/40', 'ring-4', 'ring-rose-100');
+                    actionBadge.className = 'inline-block w-full py-2.5 rounded-xl bg-rose-600 text-white font-bold text-sm';
+                    actionBadge.textContent = '❌ Tu elección (Desequilibrado)';
+                } else {
+                    cardEl.classList.add('opacity-65');
+                    actionBadge.className = 'inline-block w-full py-2.5 rounded-xl bg-slate-200 text-slate-600 font-semibold text-xs';
+                    actionBadge.textContent = opt.tag;
+                }
+            });
+            
+            // Mostrar panel de retroalimentación educativa
+            showFeedback(round, selectedOption, isCorrect);
+        }
+
+        function showFeedback(round, selectedOption, isCorrect) {
+            const panel = document.getElementById('feedbackPanel');
+            const icon = document.getElementById('feedbackIcon');
+            const title = document.getElementById('feedbackTitle');
+            const points = document.getElementById('feedbackPoints');
+            const mainText = document.getElementById('feedbackMainText');
+            const breakdown = document.getElementById('feedbackBreakdown');
+            const nextBtn = document.getElementById('nextRoundBtn');
+            
+            panel.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-300', 'text-emerald-950', 'bg-amber-50', 'border-amber-300', 'text-amber-950');
+            
+            if (isCorrect) {
+                panel.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-950');
+                icon.textContent = '🎉';
+                title.textContent = '¡Excelente elección! Menú Equilibrado';
+                points.textContent = '+100 Puntos';
+                points.className = 'text-xs font-extrabold uppercase px-3 py-1 rounded-full bg-emerald-600 text-white shadow-sm';
+            } else {
+                panel.classList.add('bg-amber-50', 'border-amber-300', 'text-amber-950');
+                icon.textContent = '💡';
+                title.textContent = `Elegiste el ${selectedOption.label} (${selectedOption.tag})`;
+                points.textContent = '+0 Puntos';
+                points.className = 'text-xs font-extrabold uppercase px-3 py-1 rounded-full bg-amber-600 text-white shadow-sm';
+            }
+            
+            mainText.textContent = selectedOption.detailedExplanation;
+            
+            // Desglose de los 3 menús
+            breakdown.innerHTML = round.options.map(opt => `
+                <li class="flex items-start gap-2">
+                    <span class="shrink-0 font-bold">${opt.isBalanced ? '✅' : '⚠️'}</span>
+                    <div>
+                        <strong class="${opt.isBalanced ? 'text-emerald-700' : 'text-slate-800'}">${opt.label} (${opt.tag}):</strong>
+                        <span>${opt.shortFeedback}</span>
+                    </div>
+                </li>
+            `).join('');
+            
+            // Texto del botón siguiente
+            if (currentRoundIndex < roundsData.length - 1) {
+                nextBtn.innerHTML = `<span>Continuar a la siguiente ronda</span> <span>➡️</span>`;
+            } else {
+                nextBtn.innerHTML = `<span>Ver Resultados Finales</span> <span>🏆</span>`;
+            }
+            
+            // Desplazar suavemente hacia la retroalimentación en dispositivos móviles
+            setTimeout(() => {
+                panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        // Avanzar de ronda o finalizar
+        function nextRound() {
+            playSound('click');
+            if (currentRoundIndex < roundsData.length - 1) {
+                currentRoundIndex++;
+                renderRound();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                showResults();
+            }
+        }
+
+        // Pantalla Final de Resultados
+        function showResults() {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('correctCountText').textContent = `${correctAnswersCount} de ${roundsData.length} menús equilibrados seleccionados correctamente`;
+            
+            const medal = document.getElementById('resultMedal');
+            const rankTitle = document.getElementById('resultRankTitle');
+            const message = document.getElementById('resultMessage');
+            
+            if (correctAnswersCount === 3) {
+                medal.textContent = '🏆';
+                rankTitle.textContent = '¡Maestro de la Nutrición!';
+                message.textContent = '¡Puntuación perfecta! Dominas la combinación de verduras, frutas, cereales integrales y proteínas saludables en cada comida del día.';
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+                }
+            } else if (correctAnswersCount === 2) {
+                medal.textContent = '🥈';
+                rankTitle.textContent = '¡Muy Buen Trabajo!';
+                message.textContent = 'Identificaste la mayoría de los menús equilibrados. Recuerda siempre incluir verduras o frutas y evitar alimentos ultraprocesados.';
+            } else {
+                medal.textContent = '🌱';
+                rankTitle.textContent = '¡Buen Intento! Sigue Aprendiendo';
+                message.textContent = 'Ahora conoces mejor qué grupos de alimentos conforman el Plato del Bien Comer. ¡Inténtalo de nuevo para lograr los 300 puntos!';
+            }
+            
+            // Renderizar resumen por ronda
+            const summaryList = document.getElementById('summaryList');
+            summaryList.innerHTML = userHistory.map(entry => `
+                <div class="flex items-start justify-between gap-3 p-3.5 rounded-2xl border ${entry.isCorrect ? 'bg-emerald-50/70 border-emerald-200' : 'bg-rose-50/70 border-rose-200'}">
+                    <div>
+                        <div class="font-bold text-sm text-slate-800">${entry.roundTitle}</div>
+                        <div class="text-xs text-slate-600 mt-0.5">Elegiste <strong>${entry.selectedLabel}</strong>: ${entry.itemsSummary}</div>
+                    </div>
+                    <span class="text-lg shrink-0">${entry.isCorrect ? '✅' : '❌'}</span>
+                </div>
+            `).join('');
+        }
+
+        // Reiniciar el juego
+        function restartGame() {
+            startGame();
+        }
+
+        // Copiar resumen al portapapeles para entregar tarea
+        function copySummary() {
+            const lines = [
+                "Actividad 4: Selecciona el menú más equilibrado",
+                `Puntuación obtenida: ${score} / 300 (${correctAnswersCount}/3 aciertos)`,
+                "--- Resumen de elecciones ---",
+                ...userHistory.map(h => `• ${h.roundTitle}: ${h.selectedLabel} (${h.isCorrect ? 'Equilibrado' : 'Desequilibrado'}) - ${h.itemsSummary}`)
+            ];
+            
+            const textArea = document.createElement("textarea");
+            textArea.value = lines.join("\n");
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                const feedback = document.getElementById('copyFeedback');
+                feedback.classList.remove('hidden');
+                setTimeout(() => feedback.classList.add('hidden'), 4000);
+            } catch (err) {
+                console.error('No se pudo copiar:', err);
+            }
+            document.body.removeChild(textArea);
+        }
+    </script>
+</body>
+</html>
